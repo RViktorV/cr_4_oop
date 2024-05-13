@@ -64,8 +64,26 @@ class HhRuVacancyAPI(AbstractVacancyAPI):
         else:
             return "Ошибка при запросе вакансий:", response.status_code
 
+import sys
+import time
+
+def progress_bar(total):
+    bar_length = 50
+    for i in range(total + 1):
+        progress = i / total
+        bar = '[' + '#' * int(progress * bar_length) + ' ' * (bar_length - int(progress * bar_length)) + ']'
+        sys.stdout.write('\rЗагрузка: {}% {}'.format(int(progress * 100), bar))
+        sys.stdout.flush()
+        time.sleep(0.1)  # Эмулируем процесс загрузки
+    print('\nЗагрузка завершена.')
+
+
+
 
 if __name__ == '__main__':
     hh_api = HhRuVacancyAPI()
     hh_vacancies = hh_api.get_vacancies("python developer")
     print(hh_vacancies)
+    # Пример использования
+    total_size = 100
+    progress_bar(total_size)
