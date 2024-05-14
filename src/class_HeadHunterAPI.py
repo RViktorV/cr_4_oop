@@ -3,12 +3,14 @@ import requests
 from progress_bar import progress_bar
 
 class AbstractVacancyAPI(ABC):
+    '''Абстрактный класс для работы с API сервиса с вакансиями'''
     @abstractmethod
     def get_vacancies(self, keyword, count):
         pass
 
 
 class HhRuVacancyAPI(AbstractVacancyAPI):
+    '''Класс для работы с платформой hh.ru.'''
     def __init__(self):
         self.url = 'https://api.hh.ru/vacancies'
         self.params = {
@@ -19,8 +21,9 @@ class HhRuVacancyAPI(AbstractVacancyAPI):
             "per_page": 100  # Количество вакансий на странице
         }
 
-    def get_vacancies(self, keyword, count):
-        self.params['text'] = keyword
+    def get_vacancies(self, keyword, count): # count - количество вакансий для выгрузки
+        '''Метод класс подключается к API и получать вакансии в формате json'''
+        self.params['text'] = keyword # Ключевое слово для поиска вакансий
         total_vacancies = []
         while len(total_vacancies) < count:
             response = requests.get(self.url, params=self.params)
