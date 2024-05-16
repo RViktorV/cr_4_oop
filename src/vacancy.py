@@ -6,12 +6,12 @@ import os
 
 
 class Vacancy(HhRuVacancyAPI):
-    def __init__(self, id, name, url, salary, request):
-        self.__id = id
-        self.name = name
-        self.url = url
-        self.salary = salary
-        self.request = request
+    ''' Класс для работы с вакансиями - формирует список объектов класса в файл json'''
+    def __init__(self, name, url, salary, request):
+        self.name = name # Наименование вакансии
+        self.url = url # URL  вакансии
+        self.salary = salary #Заработная плата
+        self.request = request #Требования к вакансии
 
     def __repr__(self):
         return f'{self.name}, {self.url}, {self.salary}, {self.request}'
@@ -19,7 +19,19 @@ class Vacancy(HhRuVacancyAPI):
     def __str__(self):
         return f'Вакансия:{self.name}, зарплата: {self.salary}, требования: {self.request}'
 
+    def __eq__(self, other): # магический метод сравнеия вакансий на равенство по заработной плате
+        return self.salary == other.salary
+
+    def __lt__(self, other):# магический метод сравнеия вакансий на < по заработной плате
+        return self.salary < other.salary
+
+    def __gt__(self, other):# магический метод сравнеия вакансий на > по заработной плате
+        return self.salary > other.salary
+
     def cast_to_object_list(self, hh_vacancies=HhRuVacancyAPI().get_vacancies("python", 5)):
+        '''Метод класса Vacancy который создает список объектов вакансий из json полученного в калссе HhRuVacancyAPI
+        В аргумент подается объект класса HhRuVacancyAPI() обработанный методом  класса get_vacancies("python", 5))
+        в который подается ключевое слово для поиска вакансий и количество выводимых вакансий'''
         list_vacancies = []
         amount_vacancy = len(hh_vacancies)
         print(f'Найдено вакансий: {amount_vacancy}\n')
@@ -58,7 +70,6 @@ class Vacancy(HhRuVacancyAPI):
                 "requirements": request,
                 "responsibilities": Responsibilities
             })
-
         # Запись данных в файл JSON
         folder_path = ROOT_DIR
         file_path = os.path.join(folder_path, 'data', "vacancies.json")
@@ -70,8 +81,13 @@ class Vacancy(HhRuVacancyAPI):
 
 
 if __name__ == '__main__':
-    vacancy = Vacancy('python', '', '80000-100000', 'опыт работы от 3х лет')
-    print(vacancy)
+    vacancy1 = Vacancy('python', '', '70000-100000', 'опыт работы от 3х лет')
+    vacancy2 = Vacancy('developer', '', '60000-110000', 'опыт работы программистом')
+    print(vacancy1)
+    print(vacancy2)
+    print(vacancy1 == vacancy2)
+    print(vacancy1 < vacancy2)
+    print(vacancy1 > vacancy2)
     vac = HhRuVacancyAPI()
-    print(vacancy.cast_to_object_list(vac.get_vacancies("develop", 3)))
+    print(vacancy1.cast_to_object_list(vac.get_vacancies("develop", 2)))
     progress_bar(100)
