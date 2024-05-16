@@ -1,4 +1,6 @@
 from abc import ABC, abstractmethod
+from src.class_HeadHunterAPI import HhRuVacancyAPI
+from src.vacancy import Vacancy
 from config import ROOT_DIR
 import json
 import os
@@ -18,19 +20,18 @@ class VacancyStorage(ABC):
         pass
 
 class JSONVacancyStorage(VacancyStorage):
-    def __init__(self):
-        self.filepath = []
-        folder_path = ROOT_DIR
-        file_path = os.path.join(folder_path, 'data', "vacancy_storage.json")
+    def __init__(self, list_vacancies):
+        self.list_vacancies = list_vacancies
+        self.filepath = os.path.join(ROOT_DIR, 'data', "vacancy_storage.json")
         # Откройте файл для записи в указанной папке
-        with open(file_path, "w", encoding='utf-8') as f:
-            json.dump(self.filepath, f, ensure_ascii=False, indent=4)
+        with open(self.filepath, "w", encoding='utf-8') as f:
+            json.dump(self.list_vacancies, f, ensure_ascii=False, indent=4)
 
     def add_vacancy(self, vacancy):
         with open(self.filepath, 'r', encoding='utf-8') as file:
             self.filepath = json.load(file)
 
-        self.filepath.append(vacancy)
+        vacancy_storage.append(vacancy)
 
         with open(self.filepath, 'w', encoding='utf-8') as file:
             json.dump(self.filepath, file, ensure_ascii=False, indent=4)
@@ -53,21 +54,34 @@ class JSONVacancyStorage(VacancyStorage):
             json.dump(vacancies, file)
 
 
-if __name__ == '__main__':
+
+vacancy = Vacancy( 1,'python',"", '80000-100000', 'опыт работы от 3х лет')
+vacancies = vacancy.cast_to_object_list(HhRuVacancyAPI().get_vacancies("develop", 3))
+
     # Создаем экземпляр класса
+storage = JSONVacancyStorage(vacancies)
+print(storage)
+#
+# # Добавляем вакансии
+# storage.add_vacancy({'id': 1, 'title': 'Python Developer', 'company': 'Example Corp', 'location': 'New York'})
+# with open('vacancy_storage.json', 'r', encoding='utf-8') as file:
+#     vacancies = json.load(file)
+#     print(vacancies)  # Должен содержать добавленную вакансию
+# storage.add_vacancy({'id': 2, 'title': 'Data Scientist', 'company': 'Data Inc', 'location': 'San Francisco'})
+#
+# with open('vacancy_storage.json', 'r', encoding='utf-8') as file:
+#     vacancies = json.load(file)
+#     print(vacancies)  # Должен содержать обе добавленные вакансии
 
-    storage = JSONVacancyStorage()
 
-    # Добавляем вакансии
-    storage.add_vacancy({'id': 1, 'title': 'Python Developer', 'company': 'Example Corp', 'location': 'New York'})
-    with open('vacancy_storage.json', 'r', encoding='utf-8') as file:
-        vacancies = json.load(file)
-        print(vacancies)  # Должен содержать добавленную вакансию
-    storage.add_vacancy({'id': 2, 'title': 'Data Scientist', 'company': 'Data Inc', 'location': 'San Francisco'})
 
-    with open('vacancy_storage.json', 'r', encoding='utf-8') as file:
-        vacancies = json.load(file)
-        print(vacancies)  # Должен содержать обе добавленные вакансии
+
+
+
+
+
+
+
 
 
 # class JSONVacancyStorage(VacancyStorage):
@@ -104,3 +118,19 @@ if __name__ == '__main__':
 #
 #         with open(self.filepath, 'w') as file:
 #             json.dump(vacancies, file)
+#
+# if __name__ == '__main__':
+#     # Создаем экземпляр класса
+#
+#     storage = JSONVacancyStorage()
+#
+#     # Добавляем вакансии
+#     storage.add_vacancy({'id': 1, 'title': 'Python Developer', 'company': 'Example Corp', 'location': 'New York'})
+#     with open('vacancy_storage.json', 'r', encoding='utf-8') as file:
+#         vacancies = json.load(file)
+#         print(vacancies)  # Должен содержать добавленную вакансию
+#     storage.add_vacancy({'id': 2, 'title': 'Data Scientist', 'company': 'Data Inc', 'location': 'San Francisco'})
+#
+#     with open('vacancy_storage.json', 'r', encoding='utf-8') as file:
+#         vacancies = json.load(file)
+#         print(vacancies)  # Должен содержать обе добавленные вакансии
