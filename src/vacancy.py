@@ -1,34 +1,58 @@
 from src.class_HeadHunterAPI import HhRuVacancyAPI
-from progress_bar import progress_bar
-from config import ROOT_DIR
-import json
-import os
 
 
-class Vacancy(HhRuVacancyAPI):
+
+
+class Vacancy():
     ''' Класс для работы с вакансиями - формирует список объектов класса в файл json'''
-    def __init__(self, name, url, salary, request):
+    def __init__(self, id, name, area, url, salary_from, salary_to, request, currency, responsibilities):
+        self.__id = id #id  вакансии
+        self.area = area #Город
         self.name = name # Наименование вакансии
         self.url = url # URL  вакансии
-        self.salary = salary #Заработная плата
+        self.salary_from = salary_from #Заработная от ...
+        self.salary_to = salary_to  # Заработная до ...
+        self.currency = currency #Курс по которому платиться заработная плата
         self.request = request #Требования к вакансии
+        self.responsibilities = responsibilities #Обязанности вакансии
 
     def __repr__(self):
-        return f'{self.name}, {self.url}, {self.salary}, {self.request}'
+        return f'{self.__id}, {self.name}, {self.area}, {self.salary_from}, {self.salary_to}, {self.currency},  {self.url}, {self.request}, {self.responsibilities}'
 
     def __str__(self):
-        return f'Вакансия:{self.name}, зарплата: {self.salary}, требования: {self.request}'
+        return f'id вакансии: {self.__id}, Вакансия:{self.name}, Зарплата от: {self.salary_from}, Зарплата до: {self.salary_to}, Валют:{self.currency}, URL вакансии: {self.url}, Требования: {self.request}, Обязанности: {self.responsibilities}'
 
-    def __eq__(self, other): # магический метод сравнеия вакансий на равенство по заработной плате
-        return self.salary == other.salary
+    def __eq__(self, other):
+        return self.salary_from == other.salary_from and self.salary_to == other.salary_to
 
-    def __lt__(self, other):# магический метод сравнеия вакансий на < по заработной плате
-        return self.salary < other.salary
+    def __lt__(self, other):
+        return self.salary_to < other.salary_to
 
-    def __gt__(self, other):# магический метод сравнеия вакансий на > по заработной плате
-        return self.salary > other.salary
+    def __gt__(self, other):
+        return self.salary_to > other.salary_to
+    # def __eq__(self, other):
+    #     return self.salary_to == other.salary_to and self.salary_from == other.salary_from
+    #
+    # def __lt__(self, other):
+    #     return self.salary_to < other.salary_to
+    #
+    # def __lt__(self, other):
+    #     return self.salary_to < other.salary_from
+    #
+    # def __lt__(self, other):
+    #     return self.salary_from < other.salary_from
+    #
+    # def __gt__(self, other):
+    #     return self.salary_from > other.salary_to
+    #
+    # def __gt__(self, other):
+    #     return self.salary_from > other.salary_from
+    #
+    # def __le__(self, other):
+    #     return self.salary_from <= other.salary_to
 
-    def cast_to_object_list(self, hh_vacancies=HhRuVacancyAPI().get_vacancies("python", 5)):
+
+    def cast_to_object_list(self, hh_vacancies):
         '''Метод класса Vacancy который создает список объектов вакансий из json полученного в калссе HhRuVacancyAPI
         В аргумент подается объект класса HhRuVacancyAPI() обработанный методом  класса get_vacancies("python", 5))
         в который подается ключевое слово для поиска вакансий и количество выводимых вакансий'''
@@ -70,24 +94,25 @@ class Vacancy(HhRuVacancyAPI):
                 "requirements": request,
                 "responsibilities": Responsibilities
             })
-        # Запись данных в файл JSON
-        folder_path = ROOT_DIR
-        file_path = os.path.join(folder_path, 'data', "vacancies.json")
-        # Откройте файл для записи в указанной папке
-        with open(file_path, "w", encoding='utf-8') as f:
-            json.dump(list_vacancies, f, ensure_ascii=False, indent=4)
 
         return list_vacancies
 
 
 if __name__ == '__main__':
-    vacancy1 = Vacancy('python', '', '70000-100000', 'опыт работы от 3х лет')
-    vacancy2 = Vacancy('developer', '', '60000-110000', 'опыт работы программистом')
-    print(vacancy1)
-    print(vacancy2)
+    vacancy1 = Vacancy(1,'python', 'Москва', '', 60000, 90000, 'Опыт', "RUB", "")
+    vacancy2 = Vacancy(3,'developer', 'Новосибирск', '', 90000, 0, 'Опыт python',"RUB", "Писать код")
+    # print(vacancy1)
+    # print(vacancy2)
     print(vacancy1 == vacancy2)
     print(vacancy1 < vacancy2)
     print(vacancy1 > vacancy2)
-    vac = HhRuVacancyAPI()
-    print(vacancy1.cast_to_object_list(vac.get_vacancies("develop", 2)))
-    progress_bar(100)
+
+    # print(vacancy1.cast_to_object_list(HhRuVacancyAPI().get_vacancies("develop", 3)))
+    # progress_bar(100)
+
+# # Запись данных в файл JSON
+# folder_path = ROOT_DIR
+# file_path = os.path.join(ROOT_DIR, 'data', "vacancies.json")
+# # Откройте файл для записи в указанной папке
+# with open(file_path, "w", encoding='utf-8') as f:
+#     json.dump(vacancy, f, ensure_ascii=False, indent=4)

@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import requests
-from progress_bar import progress_bar
+
 
 class AbstractVacancyAPI(ABC):
     '''Абстрактный класс для работы с API сервиса с вакансиями'''
@@ -37,4 +37,4 @@ if __name__ == '__main__':
     hh_api = HhRuVacancyAPI()
     hh_vacancies = hh_api.get_vacancies("python developer", 5)  # Задаем количество выводимых вакансий
     print(hh_vacancies)
-    progress_bar(100)
+    # progress_bar(100)
