@@ -1,91 +1,98 @@
 from src.class_HeadHunterAPI import HhRuVacancyAPI
-
-
-
-
 class Vacancy():
     ''' Класс для работы с вакансиями - формирует список объектов класса в файл json'''
-    def __init__(self, id, name, area, salary_from, salary_to, currency, url, request, responsibilities):
-        self.__id = id #id  вакансии
+    def __init__(self, name, area, salary_from, salary_to, currency, url, requirement, responsibilities):
         self.name = name # Наименование вакансии
         self.area = area  # Город
         self.salary_from = salary_from #Заработная от ...
         self.salary_to = salary_to  # Заработная до ...
         self.currency = currency #Курс по которому платиться заработная плата
         self.url = url  # URL  вакансии
-        self.request = request #Требования к вакансии
+        self.requirement = requirement #Требования к вакансии
         self.responsibilities = responsibilities #Обязанности вакансии
+        self.validate()
+
+    def validate(self):
+        self.salary_to = self.salary_to if self.salary_to is not None else 0
+        self.salary_from = self.salary_from if self.salary_from is not None else 0
+        self.currency = 'RUB' if self.currency == 'RUR' else self.currency
+        self.requirement = self.requirement if self.requirement is not None else ""
+        self.responsibilities = self.responsibilities if self.responsibilities is not None else ""
+
 
     def __repr__(self):
-        return f'{self.__id}, {self.name}, {self.area}, {self.salary_from}, {self.salary_to}, {self.currency}, {self.url}, {self.request}, {self.responsibilities}'
+        return f'{self.name}, {self.area}, {self.salary_from}, {self.salary_to}, {self.currency}, {self.url}, {self.requirement}, {self.responsibilities}'
 
     def __str__(self):
-        return f'id вакансии: {self.__id}, Вакансия:{self.name}, Город: {self.area}, Зарплата от: {self.salary_from}, Зарплата до: {self.salary_to}, Валюта: {self.currency}, URL вакансии: {self.url}, Требования: {self.request}, Обязанности: {self.responsibilities}'
+        return (f'Вакансия:{self.name}\n'
+                f'Город: {self.area}\n'
+                f'Зарплата от: {self.salary_from}\n'
+                f'Зарплата до: {self.salary_to}\n'
+                f'Валюта: {self.currency}\n'
+                f'URL вакансии: {self.url}\n'
+                f'Требования: {self.requirement}\n'
+                f'Обязанности: {self.responsibilities}\n')
 
     def __eq__(self, other):
         return self.salary_from == other.salary_from and self.salary_to == other.salary_to
 
     def __lt__(self, other):
+        if self.salary_from != other.salary_from:
+            return self.salary_from < other.salary_from
         return self.salary_to < other.salary_to
-
-    def __gt__(self, other):
-        return self.salary_to > other.salary_to
-
-    def cast_to_object_list(self, hh_vacancies):
-        '''Метод класса Vacancy который создает список объектов вакансий из json полученного в калссе HhRuVacancyAPI
-        В аргумент подается объект класса HhRuVacancyAPI() обработанный методом  класса get_vacancies("python", 5))
-        в который подается ключевое слово для поиска вакансий и количество выводимых вакансий'''
+    @classmethod
+    def cast_to_object_list(cls, hh_vacancies):
+        '''Метод класса Vacancy который создает список объектов вакансий из json полученного в классе HhRuVacancyAPI'''
         list_vacancies = []
         amount_vacancy = len(hh_vacancies)
         print(f'Найдено вакансий: {amount_vacancy}\n')
-        for vacancy in hh_vacancies:
-            id = vacancy["id"]
-            name = vacancy["name"]
-            salary_from = vacancy["salary"]['from']
-            if salary_from is not None:
-                salary_from = salary_from
-            else:
-                salary_from = 0
-            salary_to = vacancy["salary"]['to']
-            if salary_to is not None:
-                salary_to = salary_to
-            else:
-                salary_to = 0
-            currency = vacancy["salary"]['currency']
-            if currency == 'RUR':
-                currency = 'RUB'
-            else:
-                currency = currency
-            alternate_url = vacancy["alternate_url"]
-            request = str(vacancy['snippet']['requirement']).replace("<highlighttext>", "").replace(
-                "</highlighttext>", "")
-            Responsibilities = str(vacancy['snippet']['responsibility']).replace("<highlighttext>", "").replace(
-                "</highlighttext>", "")
-            area = vacancy["area"]["name"]
-            list_vacancies.append({
-                "id": id,
-                "name": name,
-                "area": area,
-                "salary_from": salary_from,
-                "salary_to": salary_to,
-                "currency": currency,
-                "url": alternate_url,
-                "requirements": request,
-                "responsibilities": Responsibilities
-            })
+        for vac in hh_vacancies:
+            name = vac["name"]
+            salary_from = vac["salary"]['from'] if vac["salary"] else 0
+            salary_to = vac["salary"]['to'] if vac["salary"] else 0
+            currency = vac["salary"]['currency'] if vac["salary"] else 0
+            alternate_url = vac["alternate_url"]
+            requirement = (str(vac['snippet']['requirement'])
+                           .replace("<highlighttext>", "")
+                           .replace("</highlighttext>", "") if vac['snippet']['requirement'] else "")
+            responsibilities = (str(vac['snippet']['responsibility'])
+                                .replace("<highlighttext>", "")
+                                .replace("</highlighttext>", "") if vac['snippet']['responsibility'] else "")
+            area = vac["area"]["name"]
+            vacancy = cls(name, area, salary_from, salary_to, currency, alternate_url, requirement, responsibilities)
 
+            list_vacancies.append(vacancy)
         return list_vacancies
+
+    def to_dict(self):
+        '''Метод коорый преобрзует объекты в словарь для дальнейшей его записи в файл json'''
+        return {
+            "name": self.name,
+            "area": self.area,
+            "salary_from": self.salary_from,
+            "salary_to": self.salary_to,
+            "currency": self.currency,
+            "url": self.url,
+            "requirement": self.requirement,
+            "responsibilities": self.responsibilities
+        }
 
 
 if __name__ == '__main__':
-    vacancy1 = Vacancy(1,'python', 'Саратов', 50000, 70000, 'EUR', '', 'Знание pycharm', 'знать python')
-    vacancy2 = Vacancy(3,'developer', 'Новосибирск', 50000, 95000, "RUB",'', 'Опыт python', "Писать код")
+    hh_api = HhRuVacancyAPI()
+    hh_vacancies = hh_api.get_vacancies("python developer", 10)
+    list_vacancies = Vacancy.cast_to_object_list(hh_vacancies)
+    for vacancy in list_vacancies:
+        print(vacancy)
+    print('____________________________________________________________________\n')
+    sorted_vacancies = sorted(list_vacancies)
+    for vacancy in sorted_vacancies:
+        print(vacancy)
+
+    vacancy1 = Vacancy('python', 'Саратов', 50000, 80000, 'EUR', '', 'Знание pycharm', 'знать python')
+    vacancy2 = Vacancy('developer', 'Новосибирск', 50000, 70000, "RUB", '', 'Опыт python', "Писать код")
     print(vacancy1)
     print(vacancy2)
     print(vacancy1 == vacancy2)
     print(vacancy1 < vacancy2)
     print(vacancy1 > vacancy2)
-
-
-
-
