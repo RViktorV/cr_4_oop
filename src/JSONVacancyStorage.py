@@ -1,15 +1,17 @@
 from abc import ABC, abstractmethod
 import json
 import os
-import logging
 from src.class_HeadHunterAPI import HhRuVacancyAPI
 from src.vacancy import Vacancy
-from config import ROOT_DIR
+from config import DATA_PATH
 
 
 class AbstractVacancyStorage(ABC):
     '''Абстрактный класс для добавления, чтения и удаления вакансий'''
 
+    @abstractmethod
+    def add_vacancies(self, vacancies):
+        pass
     @abstractmethod
     def add_vacancy(self, vacancy):
         pass
@@ -29,21 +31,33 @@ class JSONVacancyStorage(AbstractVacancyStorage):
      удаляет вакансии из этого файла и
      выводит вакансии из этого файла'''
 
-    def __init__(self, list_vacancies):
-        self.file_path = os.path.join(ROOT_DIR, 'data', "vacancies_storage.json")
+    def __init__(self, file_name):
         # Запись данных в файл JSON
+        self.file_path = os.path.join(DATA_PATH, file_name)
+        self.prepare()
+
+    def prepare(self):
+        if not os.path.exists(self.file_path):
+            with open(self.file_path, "w", encoding='utf-8') as file:
+                json.dump([], file)
+
+    def add_vacancies(self, vacancies):
+        vacancies_dict = [vacancy.to_dict() for vacancy in vacancies]
         with open(self.file_path, "w", encoding='utf-8') as f:
-            json.dump([(vac) for vac in list_vacancies], f, ensure_ascii=False, indent=4)
+            json.dump(vacancies_dict, f, ensure_ascii=False, indent=4)
 
     def add_vacancy(self, vacancy):
         '''Метод который добавляет вакансию в файл "vacancies_storage.json"'''
         try:
             # Чтение существующих данных из файла
             with open(self.file_path, "r", encoding='utf-8') as f:
-                data = json.load(f)
+                try:
+                    data = json.load(f)
+                    if not isinstance(data, list):
+                        data = []
+                except json.JSONDecodeError:
+                    data = []
         except FileNotFoundError:
-            data = []
-        except json.JSONDecodeError:
             data = []
 
         # Добавление новой вакансии в список
@@ -53,17 +67,23 @@ class JSONVacancyStorage(AbstractVacancyStorage):
         with open(self.file_path, "w", encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def get_vacancies(self, criteria: dict) -> list:
+    def get_vacancies(self, criteria_filtr: dict) -> list:
         '''Метод для извлечения данных из файла на основе заданных критериев'''
         try:
             with open(self.file_path, "r", encoding="utf-8") as file:
                 data = json.load(file)
         except (FileNotFoundError, json.JSONDecodeError):
             return []
+        def matches_criteria(vacancy, criteria_filtr):
+            for key, value in criteria_filtr.items():
+                vacancy_value = vacancy.get(key)
+                if vacancy_value is None or value not in vacancy_value:
+                    return False
+            return True
 
-        return [vacancy for vacancy in data if all(vacancy.get(key) == value for key, value in criteria.items())]
+        return [vacancy for vacancy in data if matches_criteria(vacancy, criteria_filtr)]
 
-    def remove_vacancy(self, criteria):
+    def remove_vacancy(self, criteria_remove):
         '''Метод для удаления информации о вакансиях из файла по указанным критериям'''
         try:
             with open(self.file_path, "r", encoding='utf-8') as f:
@@ -72,28 +92,33 @@ class JSONVacancyStorage(AbstractVacancyStorage):
             data = []
 
         remaining_vacancies = [vacancy for vacancy in data if
-                               not all(vacancy.get(key) == value for key, value in criteria.items())]
+                               not all(vacancy.get(key) == value for key, value in criteria_remove.items())]
 
         with open(self.file_path, "w", encoding='utf-8') as f:
             json.dump(remaining_vacancies, f, ensure_ascii=False, indent=4)
 
+    def print_json(self,file_name):
+        try:
+            with open(self.file_path, 'r', encoding='utf-8') as file:
+                data = json.load(file)
+                print(json.dumps(data, indent=4, ensure_ascii=False))
+        except FileNotFoundError:
+            print(f"Файл {file_name} не найден.")
+        except json.JSONDecodeError:
+            print(f"Ошибка декодирования JSON в файле {file_name}.")
+
 
 if __name__ == '__main__':
-    vacancy1 = Vacancy(1, 'python', 'Саратов', 50000, 70000, 'EUR', '', 'Знание pycharm', 'знать python')
-    list_vacancies = vacancy1.cast_to_object_list(HhRuVacancyAPI().get_vacancies("python", 5))
+    hh_api = HhRuVacancyAPI()
+    hh_vacancies = hh_api.get_vacancies("python developer", 10)
+    vacancy = Vacancy('python', 'Москва', 100000, 150000, 'RUR', "https://hh.ru/vacancy/99433253", 'Знание pycharm','знать python')
+    list_vacancies = vacancy.cast_to_object_list(hh_vacancies)
+    vacancy1 = Vacancy('Крановщик', 'Новосибирск', 60000, 100000, 'RUR', '', 'Уметь водить кран', 'Не бояться высоты')
 
-    storage = JSONVacancyStorage(list_vacancies)
-
-    vacancy2 = Vacancy(3, 'developer', 'Новосибирск', 50000, 95000, "RUB", '', 'Опыт python', "Писать код")
-    vacancy3 = Vacancy(4, 'python_developer', 'Самара', 75000, 90000, 'RUB', '', 'Пунктуальность',
-                       "Писать код на Python")
-    vacancy4 = Vacancy(2, 'Тестировщик', 'Красноярск', 55000, 85000, "EUR", '', 'Опыт', "Читать код")
-
-    storage.add_vacancy(vacancy2)
-    storage.add_vacancy(vacancy3)
-    storage.add_vacancy(vacancy4)
-
-    result = storage.get_vacancies({"name": "python_developer"})
-    print(result)
-    storage.remove_vacancy({"area": "Красноярск"})
+    storage = JSONVacancyStorage('vacancies.json')
+    storage.add_vacancies(list_vacancies)
+    storage.add_vacancy(vacancy1)
+    storage.get_vacancies({"area":'Москва'})
+    storage.remove_vacancy({"url": "https://hh.ru/vacancy/98901908"})
+    storage.print_json('file.json')
 
