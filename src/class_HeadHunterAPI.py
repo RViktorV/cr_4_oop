@@ -23,18 +23,21 @@ class HhRuVacancyAPI(AbstractVacancyAPI):
 
     def get_vacancies(self, keyword, count): # count - количество вакансий для выгрузки
         '''Метод класс подключается к API и получать вакансии в формате json'''
-        self.params['text'] = keyword # Ключевое слово для поиска вакансий
+        self.params.update({'text': keyword}) # Ключевое слово для поиска вакансий
         total_vacancies = []
+        if count > 2000:
+            print('Вы ввели не правильное количество вакансий для загрузки, количество не должно превышать 2000')
+            count = 2000
+            print("Количество загруженных вакансий будет равно 2000")
         while len(total_vacancies) < count:
             response = requests.get(self.url, params=self.params)
             data = response.json()['items']
             total_vacancies.extend(data)
             self.params['page'] += 1
-        return total_vacancies[:count]
-
+            return total_vacancies[:count]
 
 if __name__ == '__main__':
     hh_api = HhRuVacancyAPI()
-    hh_vacancies = hh_api.get_vacancies("python developer", 5)  # Задаем количество выводимых вакансий
+    hh_vacancies = hh_api.get_vacancies("python developer", 100)  # Задаем количество выводимых вакансий
     print(hh_vacancies)
-    # progress_bar(100)
+
