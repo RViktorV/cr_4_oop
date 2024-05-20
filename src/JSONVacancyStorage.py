@@ -36,6 +36,16 @@ class JSONVacancyStorage(AbstractVacancyStorage):
         self.file_path = os.path.join(DATA_PATH, file_name)
         self.prepare()
 
+    def __str__(self):
+        return (f'Вакансия:{self.name}\n'
+                f'Город: {self.area}\n'
+                f'Зарплата от: {self.salary_from}\n'
+                f'Зарплата до: {self.salary_to}\n'
+                f'Валюта: {self.currency}\n'
+                f'URL вакансии: {self.url}\n'
+                f'Требования: {self.requirement}\n'
+                f'Обязанности: {self.responsibilities}\n')
+
     def prepare(self):
         if not os.path.exists(self.file_path):
             with open(self.file_path, "w", encoding='utf-8') as file:
@@ -67,8 +77,9 @@ class JSONVacancyStorage(AbstractVacancyStorage):
         with open(self.file_path, "w", encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
 
+
     def get_vacancies(self, criteria_filtr: dict) -> list:
-        '''Метод для извлечения данных из файла на основе заданных критериев'''
+        '''Метод для извлечения данных из файла на основе заданного критерия'''
         try:
             with open(self.file_path, "r", encoding="utf-8") as file:
                 data = json.load(file)
@@ -82,6 +93,7 @@ class JSONVacancyStorage(AbstractVacancyStorage):
             return True
 
         return [vacancy for vacancy in data if matches_criteria(vacancy, criteria_filtr)]
+
 
     def remove_vacancy(self, criteria_remove):
         '''Метод для удаления информации о вакансиях из файла по указанным критериям'''
@@ -107,10 +119,16 @@ class JSONVacancyStorage(AbstractVacancyStorage):
         except json.JSONDecodeError:
             print(f"Ошибка декодирования JSON в файле {file_name}.")
 
+    def save_filtered_vacancies(self, filtered_vacancies, output_file_name):
+        output_file_path = os.path.join(DATA_PATH, output_file_name)
+        with open(output_file_path, "w", encoding='utf-8') as f:
+            json.dump(filtered_vacancies, f, ensure_ascii=False, indent=4)
+        print(f"Отфильтрованные вакансии сохранены в {output_file_path}")
+
 
 if __name__ == '__main__':
     hh_api = HhRuVacancyAPI()
-    hh_vacancies = hh_api.get_vacancies("python developer", 10)
+    hh_vacancies = hh_api.get_vacancies("python developer", 1000)
     vacancy = Vacancy('python', 'Москва', 100000, 150000, 'RUR', "https://hh.ru/vacancy/99433253", 'Знание pycharm','знать python')
     list_vacancies = vacancy.cast_to_object_list(hh_vacancies)
     vacancy1 = Vacancy('Крановщик', 'Новосибирск', 60000, 100000, 'RUR', '', 'Уметь водить кран', 'Не бояться высоты')
@@ -118,7 +136,9 @@ if __name__ == '__main__':
     storage = JSONVacancyStorage('vacancies.json')
     storage.add_vacancies(list_vacancies)
     storage.add_vacancy(vacancy1)
-    storage.get_vacancies({"area":'Москва'})
+    filtered_vacancies =storage.get_vacancies({"area":'Новосибирск'})
+    for vac in filtered_vacancies:
+        print(json.dumps(vac, indent=4, ensure_ascii=False))
     storage.remove_vacancy({"url": "https://hh.ru/vacancy/98901908"})
-    storage.print_json('file.json')
+    # storage.print_json('file.json')
 
