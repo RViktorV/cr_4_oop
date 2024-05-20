@@ -6,7 +6,7 @@ from src.JSONVacancyStorage import JSONVacancyStorage
 from config import DATA_PATH
 import sys
 import time
-import pandas as pd
+import panda as pd
 
 
 def user_interaction():
@@ -28,6 +28,7 @@ def user_interaction():
                        '4 - Сохранить вакансии из json файла в файл .XLSX(Excel)\n'
                        '5 - Сортировать вакансии по зарплате по возрастанию\n'
                        '6 - Сортировать вакансии по зарплате по убыванию\n'
+                       '7 - Удаление вакансии по url\n'
                        '0 - Выход\n')
 
         if action == "1":
@@ -50,12 +51,18 @@ def user_interaction():
             sorted_vacancies = sorted(list_vacancies)
             for vacancy in sorted_vacancies:
                 print(vacancy)
+                continue
         elif action == "6":
             sorted_vacancies = sorted(list_vacancies, reverse=True)
             for vacancy in sorted_vacancies:
                 print(vacancy)
+                continue
+        elif action == "7":
+            url = input('Введите url для удаления вакансии: ')
+            storage.remove_vacancy({"url": url})
+            continue
         elif action == "0":
-            print("Досвидания")
+            print("Досвидание")
             exit()
 
 def tabulate():
