@@ -6,7 +6,7 @@ from src.JSONVacancyStorage import JSONVacancyStorage
 from config import DATA_PATH
 import sys
 import time
-import panda as pd
+import pandas as pd
 
 
 def user_interaction():
@@ -28,42 +28,62 @@ def user_interaction():
                        '4 - Сохранить вакансии из json файла в файл .XLSX(Excel)\n'
                        '5 - Сортировать вакансии по зарплате по возрастанию\n'
                        '6 - Сортировать вакансии по зарплате по убыванию\n'
-                       '7 - Удаление вакансии по url\n'
+                       '7 - Отсортировать вакансии по городу\n'
+                       '8 - Удаление вакансии по url\n'
                        '0 - Выход\n')
 
         if action == "1":
             for vacancy in list_vacancies:
                 print(vacancy)
-                continue
         elif action == "2":
             storage.add_vacancies(list_vacancies)
-            continue
         elif action == "3":
             tabulate()
-            continue
         elif action == "3":
             tabulate()
-            continue
         elif action == "4":
             get_exls()
-            continue
         elif action == "5":
             sorted_vacancies = sorted(list_vacancies)
             for vacancy in sorted_vacancies:
                 print(vacancy)
-                continue
         elif action == "6":
             sorted_vacancies = sorted(list_vacancies, reverse=True)
             for vacancy in sorted_vacancies:
                 print(vacancy)
-                continue
         elif action == "7":
+            sity = input("Введите название города: ").lower()
+            filtered_vacancies = storage.get_vacancies({"area": sity.capitalize()})
+            if not filtered_vacancies:
+                filtered_vacancies = storage.get_vacancies({"area": sity})
+            for vacancy in filtered_vacancies:
+                print_vacancy(vacancy)
+            if filtered_vacancies:
+                reply = input('Если хотите записать эти данные в файл json наберите "да"/"нет"')
+                if reply.lower() == 'да':
+                    storage.save_filtered_vacancies(filtered_vacancies, 'filtered_vacancies.json')
+                    break
+            else:
+                break
+        elif action == "8":
             url = input('Введите url для удаления вакансии: ')
             storage.remove_vacancy({"url": url})
-            continue
         elif action == "0":
             print("Досвидание")
             exit()
+
+
+def print_vacancy(vacancy):
+    print(f"Вакансия: {vacancy['name']}")
+    print(f"Город: {vacancy['area']}")
+    print(f"Зарплата от: {vacancy.get('salary_from', 'Не указано')}")
+    print(f"Зарплата до: {vacancy.get('salary_to', 'Не указано')}")
+    print(f"Валюта: {vacancy.get('currency', 'Не указано')}")
+    print(f"URL вакансии: {vacancy['url']}")
+    print(f"Требования: {vacancy.get('requirement', 'Не указано')}")
+    print(f"Обязанности: {vacancy.get('responsibilities', 'Не указано')}")
+    print("\n")
+
 
 def tabulate():
     """
