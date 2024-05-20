@@ -32,7 +32,6 @@ class Vacancy():
                 f'URL вакансии: {self.url}\n'
                 f'Требования: {self.requirement}\n'
                 f'Обязанности: {self.responsibilities}\n')
-
     def __eq__(self, other):
         return self.salary_from == other.salary_from and self.salary_to == other.salary_to
 
