@@ -13,6 +13,8 @@ class Vacancy():
         self.validate()
 
     def validate(self):
+        '''Метод валидации, исаравляем если ЗП None, присваиваем ей 0, валюта если RUR, запысываем ей RUB,
+        если требования и обязанности None, присваиваем им пустой список'''
         self.salary_to = self.salary_to if self.salary_to is not None else 0
         self.salary_from = self.salary_from if self.salary_from is not None else 0
         self.currency = 'RUB' if self.currency == 'RUR' else self.currency
@@ -32,10 +34,10 @@ class Vacancy():
                 f'URL вакансии: {self.url}\n'
                 f'Требования: {self.requirement}\n'
                 f'Обязанности: {self.responsibilities}\n')
-    def __eq__(self, other):
+    def __eq__(self, other):# метод сравнения на равенство зарплат
         return self.salary_from == other.salary_from and self.salary_to == other.salary_to
 
-    def __lt__(self, other):
+    def __lt__(self, other):# метод сравнения на < зарплат
         if self.salary_from != other.salary_from:
             return self.salary_from < other.salary_from
         return self.salary_to < other.salary_to
@@ -61,7 +63,7 @@ class Vacancy():
             vacancy = cls(name, area, salary_from, salary_to, currency, alternate_url, requirement, responsibilities)
 
             list_vacancies.append(vacancy)
-        return list_vacancies
+        return list_vacancies # выводим список объектов вакансий
 
     def to_dict(self):
         '''Метод коорый преобрзует объекты в словарь для дальнейшей его записи в файл json'''
@@ -79,8 +81,9 @@ class Vacancy():
 
 if __name__ == '__main__':
     hh_api = HhRuVacancyAPI()
-    hh_vacancies = hh_api.get_vacancies("python developer", 10)
+    hh_vacancies = hh_api.get_vacancies("python developer", 2)
     list_vacancies = Vacancy.cast_to_object_list(hh_vacancies)
+    print(list_vacancies)
     for vacancy in list_vacancies:
         print(vacancy)
     print('____________________________________________________________________\n')
