@@ -23,7 +23,7 @@ class HhRuVacancyAPI(AbstractVacancyAPI):
 
     def get_vacancies(self, keyword, count): # count - количество вакансий для выгрузки
         '''Метод класс подключается к API и получать вакансии в формате json'''
-        self.params.update({'text': keyword}) # Ключевое слово для поиска вакансий
+        self.params.update({'text': keyword}) # keyword - Ключевое слово для поиска вакансий
         total_vacancies = []
         if count > 2000:
             print('Вы ввели не правильное количество вакансий для загрузки, количество не должно превышать 2000')
