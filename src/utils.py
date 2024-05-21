@@ -9,19 +9,19 @@ import time
 import pandas as pd
 
 
-def user_interaction():
+def user_interaction(): # функция для взаимодействия с пользователем
     print('''Данная программа будет получать информацию о вакансиях с платформы hh.ru в России, 
 сохранять ее в файл и позволять удобно работать с ней: добавлять, фильтровать, удалять\n''')
     keyword = input("Введите вакансию (например: python, python developer, back-end developer, тестировщик)\n")
     count = int(input("Введите количество вакансий для загрузки, не больше 2000:"))
-    api_hh = HhRuVacancyAPI()
-    hh_vacancies = api_hh.get_vacancies(keyword, count)
-    # progress_bar(100)
-    list_vacancies = Vacancy.cast_to_object_list(hh_vacancies)
-    storage = JSONVacancyStorage('vacancies.json')
-    storage.add_vacancies(list_vacancies)
+    api_hh = HhRuVacancyAPI() # создаем объект класса HhRuVacancyAPI
+    hh_vacancies = api_hh.get_vacancies(keyword, count) # выгружаем вакансии с сайта hh.ru в формате json, по ключевому слову и количеству
+    progress_bar(100)
+    list_vacancies = Vacancy.cast_to_object_list(hh_vacancies) # создаем список объектов вакансий
+    storage = JSONVacancyStorage('vacancies.json') # создаем объект класса JSONVacancyStorage
+    storage.add_vacancies(list_vacancies) # список объектов вакансий записываем в файл Json
     action = 1
-    while action != 0:
+    while action != 0: # запускаем опросник
         action = input('\n1 - Вывести вакансии в столбик на экран\n'
                        '2 - Сохранить все вакансии в json файл\n'
                        '3 - Вывести вакансии из json файла в таблицу на экран и сохранить в файл .txt\n'
@@ -74,6 +74,7 @@ def user_interaction():
 
 
 def print_vacancy(vacancy):
+    '''Функция для печати  вакансий в красивом виде'''
     print(f"Вакансия: {vacancy['name']}")
     print(f"Город: {vacancy['area']}")
     print(f"Зарплата от: {vacancy.get('salary_from', 'Не указано')}")
@@ -88,8 +89,6 @@ def print_vacancy(vacancy):
 def tabulate():
     """
     Вывод списка вакансий в таблицу и сохранение в файл output.txt
-    :param :
-    :return:
     """
     file_full_name = os.path.join(DATA_PATH, 'vacancies.json')
     with open(file_full_name, 'r', encoding='utf-8') as f:
@@ -144,6 +143,7 @@ def tabulate():
     print(f'Таблица сохранена в {file_full_name}')
 
 def progress_bar(total):
+    '''Функция вывода на экран прогресс бара загрузки вакансий'''
     bar_length = 50
     for i in range(total + 1):
         progress = i / total
@@ -154,6 +154,7 @@ def progress_bar(total):
     print('\nЗагрузка завершена.')
 
 def get_exls():
+    ''' Функция для записи данных в файл с расширением excel'''
     file_full_name = os.path.join(DATA_PATH, 'vacancies.json')
     with open(file_full_name, 'r', encoding='utf-8') as json_file:
         data = json.load(json_file)
